@@ -17,6 +17,15 @@ from src.relations import system_id, parse_claim, resolve_cycles
 from src.dl import DocumentClassifier, seed_all, choose_device, encode_rows, collate, fit, predict
 
 ROOT=Path(PROJECT_ROOT); OUT=ROOT/'outputs/phase2'; PRETRAINED=OUT/'pretrained'
+SAVED_RESULTS = ROOT / 'results/phase2'
+PREDICTION_COLUMNS = {
+    'Matched ML': 'matched_ml',
+    'Full-train ML (context only)': 'full_train_ml',
+    'main': 'main',
+    'frozen': 'frozen',
+    'unweighted': 'unweighted',
+    'Hybrid matched ML + DL': 'hybrid',
+}
 
 
 def write(path,data):
@@ -30,7 +39,8 @@ def config():
 
 def signature():
     paths=[ROOT/'configs/phase2.json',ROOT/'src/dl.py',ROOT/'src/phase2.py',ROOT/'src/graph_review.py',
-           ROOT/'src/relations.py',ROOT/'corr2cause/download_manifest.json',ROOT/'requirements-phase2.txt',ROOT/'data/graph_reviews/cpd_assumptions.json']
+           ROOT/'src/relations.py',ROOT/'dataset/manifest.json',ROOT/'requirements/phase2.txt',
+           ROOT/'requirements/phase1.txt',ROOT/'configs/cpd_assumptions.json']
     from importlib.metadata import version
     versions=json.dumps({n:version(n) for n in ['torch','transformers','numpy','pandas','scikit-learn']},sort_keys=True).encode()
     return hashlib.sha256(b''.join(p.read_bytes() for p in paths)+versions).hexdigest()
@@ -183,12 +193,17 @@ def evaluate():
     winner=max(eligible,key=lambda n:selections[n]['dev_macro_f1'])
     write(OUT/'selection.json',{'winner':winner,'variants':selections,'signature':signature()})
     results={};graphs={}
+    predictions = frames['test'][['docId', 'label', 'template', 'num_variables']].copy()
     for name,(dev_scores,test_scores) in variants.items():
         results[name]=classification(frames['test'].label,test_scores,selections[name]['threshold'])
         graphs[name]=graph_benchmark(frames['test'],test_scores,selections[name]['threshold'])
         predframe=frames['test'][['docId','premise','hypothesis','label','template','num_variables']].copy()
         predframe['score']=test_scores;predframe['prediction']=(test_scores>=selections[name]['threshold']).astype(int)
         predframe.to_csv(OUT/(name.replace(' ','_').replace('/','_')+'_predictions.csv'),index=False)
+        column = PREDICTION_COLUMNS[name]
+        predictions[f'{column}_score'] = predframe['score']
+        predictions[f'{column}_prediction'] = predframe['prediction']
+    predictions.to_csv(OUT / 'test_predictions.csv', index=False)
     write(OUT/'metrics.json',results);write(OUT/'graph_metrics.json',graphs)
     # Presentation cases are selected only from development inputs/scores, not test labels.
     from src.graph_review import review_demo
@@ -232,16 +247,39 @@ def plot_results(results,graphs):
     ax.set_xticks(x,['Matched ML','Fine-tuned DL','ML + DL average']);ax.set(ylim=(0,1),ylabel='Entailed-edge precision',title='Complete-pair test systems');ax.legend();fig.tight_layout();fig.savefig(OUT/'graph_precision.png',dpi=160);plt.close(fig)
 
 
-def demo():
-    success=json.loads((OUT/'SUCCESS.json').read_text())
-    if success['signature']!=signature():raise ValueError('Stale results')
-    print((OUT/'RESULTS.md').read_text())
-    print(json.dumps(json.loads((OUT/'demo.json').read_text()),indent=2))
+def demo_directory(local=False):
+    directory = OUT if local else SAVED_RESULTS
+    success_path = directory / 'SUCCESS.json'
+    if local and not success_path.is_file():
+        raise FileNotFoundError('Run python run_phase2.py evaluate before requesting local results')
+    success = json.loads(success_path.read_text())
+    if local:
+        expected = signature()
+    else:
+        # The published results retain the signature of the original training run.
+        manifest = json.loads((directory / 'data_manifest.json').read_text())
+        expected = manifest['preparation_signature']
+    if not success['complete'] or success['signature'] != expected:
+        raise ValueError('Stale or incomplete results')
+    return directory
+
+
+def demo(local=False):
+    directory = demo_directory(local)
+    print((directory / 'RESULTS.md').read_text())
+    print(json.dumps(json.loads((directory / 'demo.json').read_text()), indent=2))
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=['prepare','pilot','train','evaluate','demo'])
-    p.add_argument('--experiment',choices=['main','frozen','unweighted'],default='main');args=p.parse_args()
+    p.add_argument('--experiment',choices=['main','frozen','unweighted'],default='main')
+    p.add_argument('--local', action='store_true', help='Show the latest local evaluation with the demo command')
+    args=p.parse_args()
+    if args.command == 'demo':
+        demo(args.local)
+        return
+    if args.local:
+        p.error('--local is only available with demo')
     OUT.mkdir(parents=True,exist_ok=True)
     if args.command in ['prepare','train','evaluate']:(OUT/'SUCCESS.json').unlink(missing_ok=True)
     if args.command=='train':train(args.experiment)

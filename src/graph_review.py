@@ -122,7 +122,7 @@ def review_demo(frame,scores,threshold):
         if case['approved_edges']:
             cpds=supplied_demo_cpds(case['approved_edges'])
             integration=query_graph(case['approved_edges'],cpds)
-            integration['assumptions_file']='data/graph_reviews/cpd_assumptions.json'
+            integration['assumptions_file']='configs/cpd_assumptions.json'
             break
     return {'reviewer':'Automated exhaustive DAG consistency audit; not a human reviewer',
         'assumptions':['Closed system','Acyclic causal graph','Causal Markov and faithfulness','Premise lists all independences'],
@@ -134,7 +134,7 @@ def supplied_demo_cpds(edges):
     """Materialize the explicitly declared demo assumptions; never fit from labels."""
     import json
     from pathlib import Path
-    spec=json.loads((Path(__file__).resolve().parents[1]/'data/graph_reviews/cpd_assumptions.json').read_text())
+    spec=json.loads((Path(__file__).resolve().parents[1]/'configs/cpd_assumptions.json').read_text())
     graph=nx.DiGraph(edges);cpds={}
     for node in sorted(graph.nodes):
         parents=sorted(graph.predecessors(node))

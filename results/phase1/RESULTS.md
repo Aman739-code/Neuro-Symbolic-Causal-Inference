@@ -13,4 +13,4 @@ Other accepted claims remain in claims.json without invented direct edges.
 Graph edge precision: not measured; Corr2Cause CSVs do not supply complete gold DAGs.
 Three numerical queries validated against a specified synthetic network.
 No observational CPDs or empirical intervention effects are estimated from Corr2Cause.
-These are corrected rerun results. Historical submitted metrics remain in docs/phase1_submission/.
+These are corrected rerun results. Historical submitted metrics remain in [the original Phase 1 submission](../../docs/phase1/original_results.csv).

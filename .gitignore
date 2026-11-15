@@ -4,7 +4,8 @@ __pycache__/
 .DS_Store
 .ipynb_checkpoints/
 .chart-data-*/
-corr2cause/*.csv
-corr2cause/*.part
+dataset/*.csv
+dataset/*.part
+~$*.pptx
 outputs/
 *.log

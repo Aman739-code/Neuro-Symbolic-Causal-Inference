@@ -35,9 +35,9 @@ def prepare():
     extractor = importlib.import_module('src.features')
     frames, manifests = {}, {}
     for split in ['train', 'dev', 'test']:
-        path = ROOT / 'corr2cause' / f'{split}.csv'
+        path = ROOT / 'dataset' / f'{split}.csv'
         if not path.exists():
-            raise FileNotFoundError(f'{path} missing. Run python scripts/download_data.py')
+            raise FileNotFoundError(f'{path} missing. Run python scripts/download_dataset.py')
         with path.open('rb') as handle:
             digest = hashlib.file_digest(handle, 'sha256').hexdigest()
         cache = OUT / 'cache' / f'{split}.pkl'
@@ -98,7 +98,8 @@ def fingerprint():
     # Model reuse is valid only for the same dataset, features and training code.
     from importlib.metadata import version
     paths = [Path(__file__), ROOT / 'src/config.py', ROOT / 'src/relations.py', ROOT / 'src/bayes.py', ROOT / 'src/rules.py',
-             ROOT / 'src/data.py', ROOT / 'src/features.py', ROOT / 'requirements.txt']
+             ROOT / 'src/data.py', ROOT / 'src/features.py', ROOT / 'requirements/phase1.txt',
+             ROOT / 'configs/phase1.json']
     payload = (OUT / 'data_manifest.json').read_bytes() + b''.join(p.read_bytes() for p in paths)
     payload += json.dumps({n: version(n) for n in ['numpy', 'pandas', 'scikit-learn', 'scipy', 'pgmpy']}, sort_keys=True).encode()
     return hashlib.sha256(payload).hexdigest()
@@ -110,13 +111,28 @@ def metrics(y, pred):
 
 
 def train(frames, mask):
+    settings = json.loads((ROOT / 'configs/phase1.json').read_text())
     cols = [c for c in frames['train'][1] if c not in {'label', 'docId', 'template'}]
     x = {s: pair[1][cols] for s, pair in frames.items()}
     y = {s: pair[1].label for s, pair in frames.items()}
     candidates = {
-        'LogisticRegression': [make_pipeline(StandardScaler(), LogisticRegression(C=c, class_weight='balanced', max_iter=2000, random_state=SEED)) for c in [.1, 1.]],
-        'LinearSVM': [make_pipeline(StandardScaler(), LinearSVC(C=c, class_weight='balanced', dual=False, max_iter=5000, random_state=SEED)) for c in [.1, 1.]],
-        'RandomForest': [RandomForestClassifier(n_estimators=100, max_depth=d, class_weight='balanced', n_jobs=2, random_state=SEED) for d in [5, 10]],
+        'LogisticRegression': [
+            make_pipeline(StandardScaler(), LogisticRegression(
+                C=c, class_weight='balanced', max_iter=2000, random_state=SEED
+            ))
+            for c in settings['logistic_regression_c']
+        ],
+        'LinearSVM': [
+            make_pipeline(StandardScaler(), LinearSVC(
+                C=c, class_weight='balanced', dual=False, max_iter=5000, random_state=SEED
+            ))
+            for c in settings['linear_svm_c']
+        ],
+        'RandomForest': [
+            RandomForestClassifier(n_estimators=settings['random_forest_trees'],
+                                   max_depth=depth, class_weight='balanced', n_jobs=2, random_state=SEED)
+            for depth in settings['random_forest_depth']
+        ],
     }
     selected = {}
     for name, models in candidates.items():
@@ -131,7 +147,9 @@ def train(frames, mask):
         selected[name] = best
     winner = max(selected, key=lambda n: selected[n]['devScore'])
     # Calibrate using training folds only, preserving dev for selection.
-    calibrated = CalibratedClassifierCV(selected[winner]['model'], method='sigmoid', cv=3, n_jobs=1)
+    calibrated = CalibratedClassifierCV(
+        selected[winner]['model'], method='sigmoid', cv=settings['calibration_folds'], n_jobs=1
+    )
     calibrated.fit(x['train'], y['train'])
     dev_probabilities = calibrated.predict_proba(x['dev'][mask])[:, 1]
     threshold = max(np.linspace(.05, .95, 19), key=lambda t: (f1_score(y['dev'][mask], dev_probabilities >= t, average='macro'), t))
@@ -199,7 +217,7 @@ def evaluate(frames):
                 'Graph edge precision: not measured; Corr2Cause CSVs do not supply complete gold DAGs.',
                 'Three numerical queries validated against a specified synthetic network.',
                 'No observational CPDs or empirical intervention effects are estimated from Corr2Cause.',
-                'These are corrected rerun results. Historical submitted metrics remain in docs/phase1_submission/.']
+                'These are corrected rerun results. Historical submitted metrics remain in docs/phase1/.']
     (OUT / 'RESULTS.md').write_text('\n'.join(summary) + '\n')
     plot_results(results, graphs)
     print('\n'.join(summary), flush=True)

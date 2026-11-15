@@ -1,4 +1,4 @@
-"""Copy the published results into the local demo and test output folders."""
+"""Copy the published results into outputs for offline inspection."""
 
 import shutil
 from pathlib import Path

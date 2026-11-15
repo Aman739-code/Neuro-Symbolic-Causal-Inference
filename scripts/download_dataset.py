@@ -15,8 +15,8 @@ def checksum(path):
 
 
 def main():
-    directory = ROOT / "corr2cause"
-    manifest = json.loads((directory / "download_manifest.json").read_text())
+    directory = ROOT / "dataset"
+    manifest = json.loads((directory / "manifest.json").read_text())
     base_url = f"https://huggingface.co/datasets/{manifest['repository']}/resolve/{manifest['revision']}"
     for name, expected in manifest["files"].items():
         target = directory / name

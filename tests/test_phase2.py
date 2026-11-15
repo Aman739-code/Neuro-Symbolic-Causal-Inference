@@ -88,19 +88,37 @@ class Phase2Tests(unittest.TestCase):
 
     def test_final_artifacts(self):
         import src.phase2 as p
-        if not (p.OUT/'SUCCESS.json').exists():self.skipTest('Run Phase 2 experiments first')
-        success=json.loads((p.OUT/'SUCCESS.json').read_text());self.assertEqual(success['signature'],p.signature())
-        metrics=json.loads((p.OUT/'metrics.json').read_text());self.assertEqual(len(metrics),6)
+        out = p.demo_directory()
+        if (p.OUT / 'SUCCESS.json').is_file() and (p.OUT / 'prepared.pkl').is_file():
+            self.assertEqual(p.demo_directory(local=True), p.OUT)
+        success = json.loads((out / 'SUCCESS.json').read_text())
+        selection = json.loads((out / 'selection.json').read_text())
+        self.assertEqual(success['signature'], selection['signature'])
+        metrics = json.loads((out / 'metrics.json').read_text())
+        self.assertEqual(set(metrics), set(p.PREDICTION_COLUMNS))
+        manifest = json.loads((out / 'data_manifest.json').read_text())
+        predictions = pd.read_csv(out / 'test_predictions.csv')
+        self.assertEqual(predictions.docId.tolist(), manifest['splits']['test']['docIds'])
+        for name, column in p.PREDICTION_COLUMNS.items():
+            threshold = selection['variants'][name]['threshold']
+            scores = predictions[f'{column}_score']
+            self.assertTrue(np.isfinite(scores).all())
+            self.assertTrue(scores.between(0, 1).all())
+            np.testing.assert_array_equal(predictions[f'{column}_prediction'], scores >= threshold)
+            self.assertEqual(p.classification(predictions.label, scores, threshold), metrics[name])
         for experiment in ['main','frozen','unweighted']:
+            run = out / 'experiments' / experiment
+            record = json.loads((run / 'TRAINING_RECORD.json').read_text())
+            self.assertEqual(record['signature'], success['signature'])
             for split in ['dev','test']:
-                values=np.load(p.OUT/experiment/(split+'_scores.npy'))
+                values=np.load(run/(split+'_scores.npy'))
+                self.assertEqual(len(values), manifest['splits'][split]['rows'])
                 self.assertTrue(np.isfinite(values).all())
                 self.assertTrue(((values>=0)&(values<=1)).all())
-        graphs=json.loads((p.OUT/'graph_metrics.json').read_text())
+        graphs=json.loads((out/'graph_metrics.json').read_text())
         self.assertTrue(all(g['summary']['systems']==18 for g in graphs.values()))
-        demo=json.loads((p.OUT/'demo.json').read_text())
+        demo=json.loads((out/'demo.json').read_text())
         self.assertTrue(demo['integration']['passed'])
         self.assertTrue(all(q['passed'] for q in demo['known_network_queries']))
-        manifest=json.loads((p.OUT/'data_manifest.json').read_text())
         sets=[set(manifest['splits'][s]['docIds']) for s in ['train','dev','test']]
         self.assertTrue(sets[0].isdisjoint(sets[1]));self.assertTrue(sets[0].isdisjoint(sets[2]))

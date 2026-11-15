@@ -1,6 +1,6 @@
 # Three-minute demo and viva guide
 
-Open the [demo notebook](../../notebooks/project_demo.ipynb). The [slides](Presentation.pptx) follow the same sequence.
+Open the [demo notebook](../../notebooks/02_phase2_deep_learning.ipynb). The [slides](Presentation.pptx) follow the same sequence.
 
 1. **Show one input.** A premise describes correlations and independences in a small system. The hypothesis makes a causal claim such as “A directly causes B.” The model predicts whether the claim follows from that premise.
 2. **Compare the models.** Phase 1 used 28 handcrafted features. In Phase 2, matched ML and DistilBERT trained on the same 2,100 examples. Point to test macro F1 in the notebook. Matched ML scored 0.5927, fine-tuned DistilBERT scored 0.6726, and the average scored 0.6718. We chose the average for the demo using development data.

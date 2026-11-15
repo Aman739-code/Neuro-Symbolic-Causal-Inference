@@ -5,7 +5,7 @@ We use Corr2Cause to ask whether a causal claim follows from statements about co
 | Phase | Start here | What to show the evaluator |
 | --- | --- | --- |
 | **1 · Classical ML** | [Workflow and commands](docs/phase1/README.md) | [Walkthrough](notebooks/01_phase1_classical_ml.ipynb) · [Results](results/phase1/RESULTS.md) · [Original report](docs/phase1/Report.pdf) · [Slides](docs/phase1/AML_Phase1_Project_Presentation.pptx) |
-| **2 · Deep learning and hybrid** | [Workflow and commands](docs/phase2/RUN_AND_EXPLAIN.md) | [Walkthrough](notebooks/02_phase2_deep_learning.ipynb) · [Results](results/phase2/RESULTS.md) · [Report](docs/phase2/Report.pdf) · [Slides](docs/phase2/Presentation.pptx) · [Viva guide](docs/phase2/VIVA_AND_DEMO.md) |
+| **2 · Deep learning and hybrid** | [Phase 2 guide](docs/phase2/RUN_AND_EXPLAIN.md) | [Walkthrough](notebooks/02_phase2_deep_learning.ipynb) · [Results](results/phase2/RESULTS.md) · [Report](docs/phase2/Report.pdf) · [Slides](docs/phase2/Phase%202%20-%20What%20Justifies%20the%20Arrow.pptx) |
 
 The calibrated Phase 1 classifier scored **0.6357** test macro F1 in the corrected full-data run. In Phase 2, matched ML and DistilBERT trained on the same 2,100 examples. Matched ML scored **0.5927**, DistilBERT scored **0.6726**, and the hybrid scored **0.6718**. The hybrid led on development data. DistilBERT led on test data.
 

@@ -4,7 +4,7 @@
 2. **Test the design.** Compare the fine-tuned model with a frozen encoder and with ordinary, unweighted loss. Average the matched ML and fine-tuned DL scores for the hybrid.
 3. **Evaluate and explain.** Choose thresholds on development data, report test macro F1, and review direct-cause edges. Replay a Bayesian query with explicitly supplied probabilities.
 
-Open the [executed walkthrough](../../notebooks/02_phase2_deep_learning.ipynb), [results](../../results/phase2/RESULTS.md), [report](Report.pdf), or [slides](Presentation.pptx). The [verification summary](VERIFICATION.md) covers checkpoint, repeatability, and prediction checks.
+Open the [executed walkthrough](../../notebooks/02_phase2_deep_learning.ipynb), [results](../../results/phase2/RESULTS.md), [report](Report.pdf), or [slides](Phase%202%20-%20What%20Justifies%20the%20Arrow.pptx). The [original verification record](../../results/phase2/verification.json) summarizes checkpoint and repeatability checks for the published run.
 
 ## Run the saved demo
 

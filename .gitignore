@@ -9,3 +9,6 @@ dataset/*.part
 ~$*.pptx
 outputs/
 *.log
+/docs/STUDY_GUIDE.md
+/docs/phase2/VERIFICATION.md
+/docs/phase2/VIVA_AND_DEMO.md

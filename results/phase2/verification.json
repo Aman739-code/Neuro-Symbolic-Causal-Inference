@@ -1,0 +1,59 @@
+{
+  "phase": 2,
+  "complete": true,
+  "signature": "046f171f0668bd307b212e775853a67dcb5984a9be575e6863ebf670a73d9730",
+  "training_rows": 2100,
+  "training_systems": 25,
+  "seed": 42,
+  "training_scope": "Whole-premise local compute-budget subset; not full-data DL training",
+  "tests": {
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0
+  },
+  "checkpoint_validation": {
+    "main": {
+      "maximum_absolute_score_difference": 1.1920928955078125e-07,
+      "label_independent": true,
+      "passed": true
+    },
+    "frozen": {
+      "maximum_absolute_score_difference": 5.960464477539063e-08,
+      "label_independent": true,
+      "passed": true
+    },
+    "unweighted": {
+      "maximum_absolute_score_difference": 7.450580596923828e-08,
+      "label_independent": true,
+      "passed": true
+    }
+  },
+  "repeatability": {
+    "classification_graph_selection_predictions_identical": true,
+    "checked_files": 9,
+    "review_cases_identical": true,
+    "query_tolerance": 1e-10
+  },
+  "premise_splits_disjoint": true,
+  "graph_reference_systems": 18,
+  "reviewed_graph_provenance_verified": true,
+  "query_validation_passed": true,
+  "review_method": "Automated independence-constraint review, not human approval",
+  "notebook_executed_cells": 9,
+  "notebook_errors": 0,
+  "report_pages": 3,
+  "report_visual_review_passed": true,
+  "presentation_slides": 10,
+  "presentation_visual_review_passed": true,
+  "presentation_package_checks_passed": true,
+  "native_PowerPoint_open_claimed": false,
+  "dependencies_consistent": true,
+  "original_submission_preserved": true,
+  "offline_snapshot_demo": "passed in an isolated fresh source copy without checkpoints or raw CSVs",
+  "deliverable_hashes": {
+    "docs/phase2/Report.pdf": "82a294f4534781aa60ddf01d699bd48245234a2c7922e9918f01dd42092a98a6",
+    "docs/phase2/Presentation.pptx": "fff6915cd1cde18203765d2f6ae8f2ce7ce460b4204b7742e525b62f95b497c9",
+    "notebooks/project_demo.ipynb": "716e9da195314492103dc531f573a3047581485052bd4bd56280916d86687cdd"
+  },
+  "notebook_recomputes_graph_and_queries": true
+}

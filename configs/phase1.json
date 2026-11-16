@@ -1,0 +1,7 @@
+{
+  "logistic_regression_c": [0.1, 1.0],
+  "linear_svm_c": [0.1, 1.0],
+  "random_forest_depth": [5, 10],
+  "random_forest_trees": 100,
+  "calibration_folds": 3
+}

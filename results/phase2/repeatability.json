@@ -1,0 +1,6 @@
+{
+  "classification_graph_selection_predictions_identical": true,
+  "checked_files": 9,
+  "review_cases_identical": true,
+  "query_tolerance": 1e-10
+}

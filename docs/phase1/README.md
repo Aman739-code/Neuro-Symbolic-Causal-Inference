@@ -7,7 +7,7 @@ Each Corr2Cause example contains a premise, a causal hypothesis, and a label. A 
 3. **Train and evaluate.** Compare Logistic Regression, Linear SVM, and Random Forest with a rule-based baseline. Choose settings on development data and report [test macro F1](../../results/phase1/RESULTS.md).
 4. **Build graphs and check queries.** Turn selected direct-cause claims into edges and remove cycles. Use a specified synthetic network to check the arithmetic of Bayesian intervention queries.
 
-Open the [executed walkthrough](../../notebooks/01_phase1_classical_ml.ipynb) to see the corrected results. The [original report](Report.pdf), [slides](AML_Phase1_Project_Presentation.pptx), and [submitted scores](original_results.csv) document the earlier Phase 1 submission.
+Open the [executed walkthrough](../../notebooks/01_phase1_classical_ml.ipynb) to see the corrected results. The [original report](Report.pdf), [slides](AML_Phase1_Project_Presentation.pdf), and [submitted scores](original_results.csv) document the earlier Phase 1 submission.
 
 ## Run Phase 1
 
